@@ -7,6 +7,7 @@ const productRoutes = require('./routes/product');
 const userRoutes = require('./routes/user');
 const categoryRoutes = require('./routes/category');
 const orderRoutes = require('./routes/order');
+const authJwt = require('./middleware/jwt');
 
 const app = express();
 
@@ -18,6 +19,16 @@ app.use(cors());
 app.options('*', cors());
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use(authJwt());
+app.use((err, req, res, next) => {
+    if (err) {
+        res.status(500).json({
+            message: 'Server Error',
+            error: err.message,
+            success: false,
+        });
+    }
+});
 
 // routes
 app.use(`${api}/products`, productRoutes);

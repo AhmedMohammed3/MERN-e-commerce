@@ -119,6 +119,7 @@ router.put('/:categoryID', async (req, res) => {
             message: 'Problem Updating the Category',
             success: false,
         });
+        console.log(err);
     }
 });
 // DELETE /api/v1/categories/:categoryID
@@ -143,6 +144,7 @@ router.delete('/:categoryID', async (req, res) => {
             message: 'Problem Deleting the Category',
             success: false,
         });
+        console.log(err);
     }
 });
 

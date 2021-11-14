@@ -13,9 +13,7 @@ router.get('/', async (req, res) => {
             filter = { category: req.query.categories.split(',') };
         }
         console.log('filter', filter);
-        let products = await Product.find(filter)
-            .populate('category', '-_id -__v')
-            .select('-_id -__v');
+        let products = await Product.find(filter).populate('category');
         if (products) {
             res.status(201).json({
                 data: products,
@@ -40,7 +38,6 @@ router.get('/', async (req, res) => {
 router.get('/count', async (req, res) => {
     try {
         let productCount = await Product.countDocuments();
-        console.log(productCount);
         if (productCount) {
             res.status(201).json({
                 data: productCount,
@@ -121,9 +118,7 @@ router.get('/:productID', async (req, res) => {
                 success: false,
             });
         }
-        const product = await Product.findById(productID)
-            .populate('category', '-_id -__v')
-            .select('-_id -__v');
+        const product = await Product.findById(productID).populate('category');
         if (product) {
             res.status(201).json({
                 data: product,
@@ -212,6 +207,7 @@ router.put('/:productID', async (req, res) => {
             message: 'Problem Updating the product',
             success: false,
         });
+        console.log(err);
     }
 });
 
@@ -243,6 +239,7 @@ router.delete('/:productID', async (req, res) => {
             message: 'Problem Deleting the product',
             success: false,
         });
+        console.log(err);
     }
 });
 

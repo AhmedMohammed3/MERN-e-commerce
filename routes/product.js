@@ -191,11 +191,14 @@ router.put('/:productID', async (req, res) => {
         }
         const product = await Product.findByIdAndUpdate(productID, req.body);
         if (product) {
-            res.status(201).json({
-                message: 'Product Updated Successfully',
-                data: product,
-                success: true,
-            });
+            res.status(201).json(
+                {
+                    message: 'Product Updated Successfully',
+                    data: product,
+                    success: true,
+                },
+                { new: true }
+            );
         } else {
             res.status(400).json({
                 message: "Product doesn't exist",

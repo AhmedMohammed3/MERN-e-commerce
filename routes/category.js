@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
             });
         } else {
             res.status(404).json({
-                message: "No Categories",
+                message: 'No Categories',
                 success: false,
             });
         }
@@ -97,11 +97,15 @@ router.put('/:categoryID', async (req, res) => {
     try {
         const { categoryID } = req.params;
         const { name, icon, color } = req.body;
-        const category = await Category.findByIdAndUpdate(categoryID, {
-            name,
-            icon,
-            color,
-        });
+        const category = await Category.findByIdAndUpdate(
+            categoryID,
+            {
+                name,
+                icon,
+                color,
+            },
+            { new: true }
+        );
         if (category) {
             res.status(201).json({
                 message: 'Category Updated Successfully',
@@ -122,6 +126,7 @@ router.put('/:categoryID', async (req, res) => {
         console.log(err);
     }
 });
+
 // DELETE /api/v1/categories/:categoryID
 router.delete('/:categoryID', async (req, res) => {
     try {

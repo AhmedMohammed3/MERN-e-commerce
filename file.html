@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form id="myform">
+        <div><input type="text" value="name" name="name"></div>
+        <div><input type="text" value="description" name="description"></div>
+        <div><input type="text" value="richDescription" name="richDescription"></div>
+        <div><input type="file" name="image" multiple></div>
+        <div><input type="text" value="brand" name="brand"></div>
+        <div><input type="number" value="26" name="price"></div>
+        <div><input type="text" value="6190154db60825c94d4f6cae" name="category"></div>
+        <div><input type="number" value="26" name="countInStock"></div>
+        <div><input type="number" value="2" name="rating"></div>
+        <div><input type="number" value="3" name="numReviews"></div>
+        <div><input type="text" value="true" name="isFeatured"></div>
+
+        <input type="submit" id="btnSubmit">
+    </form>
+    <div id="output">Output will appear here</div>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#btnSubmit").click(function (event) {
+                console.log('clicked');
+
+                //stop submit the form, we will post it manually.
+                event.preventDefault();
+
+                // Get form
+                var form = $('#myform')[0];
+
+                // Create an FormData object 
+                var data = new FormData(form);
+
+                $("#btnSubmit").prop("disabled", true);
+
+                $.ajax({
+                    type: "PUT",
+                    enctype: 'multipart/form-data',
+                    url: "http://localhost:3000/api/v1/products/gallery/61901c6aa01d1864917ea7fc",
+                    data: data,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2MTkxMjMzOTRmMjhlNGMyYmEzYmY5NzAiLCJpc0FkbWluIjp0cnVlLCJlbWFpbCI6ImxvbGhhc3NhbkBlbWFpbC5jb20iLCJpYXQiOjE2MzY5MDc1NDAsImV4cCI6MTYzNjk5Mzk0MH0.OWRvMUOfveg400GBRzpQHuD8tsqQij5Rmnmf99508xE'
+                    },
+                    cache: false,
+                    timeout: 800000,
+                    success: function (data) {
+
+                        $("#output").text(data);
+                        console.log("SUCCESS : ", data);
+                        $("#btnSubmit").prop("disabled", false);
+
+                    },
+                    error: function (e) {
+
+                        $("#output").text(e.responseText);
+                        console.log("ERROR : ", e);
+                        $("#btnSubmit").prop("disabled", false);
+
+                    }
+                });
+
+            });
+
+        });
+    </script>
+</body>
+
+</html>

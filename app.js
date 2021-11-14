@@ -20,8 +20,16 @@ app.options('*', cors());
 app.use(express.json());
 app.use(morgan('tiny'));
 app.use(authJwt());
+
+// routes
+app.use(`${api}/products`, productRoutes);
+app.use(`${api}/users`, userRoutes);
+app.use(`${api}/categories`, categoryRoutes);
+app.use(`${api}/orders`, orderRoutes);
+app.use('/public', express.static(__dirname + '/public'));
 app.use((err, req, res, next) => {
     if (err) {
+        console.log(err);
         res.status(500).json({
             message: 'Server Error',
             error: err.message,
@@ -29,13 +37,6 @@ app.use((err, req, res, next) => {
         });
     }
 });
-
-// routes
-app.use(`${api}/products`, productRoutes);
-app.use(`${api}/users`, userRoutes);
-app.use(`${api}/categories`, categoryRoutes);
-app.use(`${api}/orders`, orderRoutes);
-
 // handling connection and starting server
 const connectionURL = `mongodb://localhost:27017/${process.env.DB_NAME}`;
 mongoose.connect(connectionURL, err => {

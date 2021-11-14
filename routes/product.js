@@ -1,9 +1,35 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const multer = require('multer');
 const Product = require('../models/product');
 const Category = require('../models/category');
 
 const router = express.Router();
+
+const FILE_TYPE_MAP = {
+    'image/png': 'png',
+    'image/jpg': 'jpg',
+    'image/jpeg': 'jpeg',
+};
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error('Invalid Image Type');
+
+        if (isValid) {
+            uploadError = null;
+        }
+        cb(uploadError, './public/uploads');
+    },
+    filename: function (req, file, cb) {
+        const fileName = file.originalname.split(' ').join('-');
+        const extension = FILE_TYPE_MAP[file.mimetype];
+        cb(null, fileName + '-' + Date.now() + '.' + extension);
+    },
+});
+
+const upload = multer({ storage: storage });
 
 // GET /api/v1/products
 router.get('/', async (req, res) => {
@@ -140,8 +166,9 @@ router.get('/:productID', async (req, res) => {
 });
 
 // POST /api/v1/products
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
     try {
+        console.log('req.body', req.body);
         let { category } = req.body;
         if (!mongoose.isValidObjectId(category)) {
             return res.status(400).json({
@@ -151,16 +178,27 @@ router.post('/', async (req, res) => {
         }
         category = await Category.findById(category);
         if (category) {
-            let product = new Product(req.body);
-            product = await product.save();
-            if (product) {
-                res.status(201).json({
-                    data: product,
-                    success: true,
-                });
+            if (req.file) {
+                const basePath = `${req.protocol}://${req.get(
+                    'host'
+                )}/public/upload/`;
+                req.body.image = basePath + req.file.filename;
+                let product = new Product(req.body);
+                product = await product.save();
+                if (product) {
+                    res.status(201).json({
+                        data: product,
+                        success: true,
+                    });
+                } else {
+                    res.status(500).json({
+                        message: "Can't Add product",
+                        success: false,
+                    });
+                }
             } else {
-                res.status(500).json({
-                    message: "Can't Add product",
+                res.status(400).json({
+                    message: 'No image sent',
                     success: false,
                 });
             }
@@ -179,8 +217,64 @@ router.post('/', async (req, res) => {
     }
 });
 
+// PUT /api/v1/products/gallery/:productID
+router.put(
+    '/gallery/:productID',
+    upload.array('image', 10),
+    async (req, res) => {
+        try {
+            const { productID } = req.params;
+            if (!mongoose.isValidObjectId(productID)) {
+                return res.status(400).json({
+                    message: 'Product ID is not valid',
+                    success: false,
+                });
+            }
+            if (req.files) {
+                const basePath = `${req.protocol}://${req.get(
+                    'host'
+                )}/public/upload/`;
+                let imagesPaths = req.files.map(
+                    file => basePath + file.filename
+                );
+                product = await Product.findByIdAndUpdate(
+                    productID,
+                    {
+                        images: imagesPaths,
+                    },
+                    {
+                        new: true,
+                    }
+                );
+                if (product) {
+                    res.status(201).json({
+                        data: product,
+                        success: true,
+                    });
+                } else {
+                    res.status(500).json({
+                        message: 'Problem Updating the product',
+                        success: false,
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    message: 'No images sent',
+                    success: false,
+                });
+            }
+        } catch (err) {
+            res.status(500).json({
+                message: 'Problem Updating the product',
+                success: false,
+            });
+            console.log(err);
+        }
+    }
+);
+
 // PUT /api/v1/products/:productID
-router.put('/:productID', async (req, res) => {
+router.put('/:productID', upload.single('image'), async (req, res) => {
     try {
         const { productID } = req.params;
         if (!mongoose.isValidObjectId(productID)) {
@@ -189,16 +283,21 @@ router.put('/:productID', async (req, res) => {
                 success: false,
             });
         }
-        const product = await Product.findByIdAndUpdate(productID, req.body);
+        if (req.file) {
+            const basePath = `${req.protocol}://${req.get(
+                'host'
+            )}/public/upload/`;
+            req.body.image = basePath + req.file.filename;
+        }
+        product = await Product.findByIdAndUpdate(productID, req.body, {
+            new: true,
+        });
         if (product) {
-            res.status(201).json(
-                {
-                    message: 'Product Updated Successfully',
-                    data: product,
-                    success: true,
-                },
-                { new: true }
-            );
+            res.status(201).json({
+                message: 'Product Updated Successfully',
+                data: product,
+                success: true,
+            });
         } else {
             res.status(400).json({
                 message: "Product doesn't exist",

@@ -13,8 +13,8 @@ router.get('/', async (req, res) => {
                 success: true,
             });
         } else {
-            res.status(500).json({
-                message: "Can't Get Categories",
+            res.status(404).json({
+                message: "No Categories",
                 success: false,
             });
         }

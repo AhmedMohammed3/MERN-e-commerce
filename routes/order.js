@@ -7,7 +7,10 @@ router.get('/', async (req, res) => {
     try {
         let orders = await Order.find();
         if (orders) {
-            res.status(201).json(orders);
+            res.status(201).json({
+                data: orders,
+                success: true,
+            });
         } else {
             res.status(500).json({
                 message: "Can't Get Orders",

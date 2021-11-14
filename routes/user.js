@@ -7,7 +7,10 @@ router.get('/', async (req, res) => {
     try {
         let users = await User.find();
         if (users) {
-            res.status(201).json(users);
+            res.status(201).json({
+                data: users,
+                success: true,
+            });
         } else {
             res.status(500).json({
                 message: "Can't Get Users",
